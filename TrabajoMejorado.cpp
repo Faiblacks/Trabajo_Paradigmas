@@ -1,9 +1,11 @@
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <string>
-#include <algorithm> // para ocupar std::transform
-
+#include <pstl/execution_defs.h>
 using namespace std;
+
+//class clasificacion permite almacenar las palabras claves y su nombre
 
 class Clasificacion {
 private:
@@ -11,11 +13,8 @@ private:
     vector<string> palabrasClave;
 
 public:
-    Clasificacion(const string& nombre, const vector<string>& palabrasClave)
-        : nombre(nombre), palabrasClave(palabrasClave) {}
-
-    ~Clasificacion() {}
-
+    Clasificacion(string  nombre, const vector<string>& palabrasClave)
+        : nombre(move(nombre)), palabrasClave(palabrasClave) {}
     string getNombre() const {
         return nombre;
     }
@@ -24,138 +23,153 @@ public:
         return palabrasClave;
     }
 
-    bool contienePalabraClave(const string& palabra) const {
-        return find(palabrasClave.begin(), palabrasClave.end(), palabra) != palabrasClave.end();
-    }   
+    bool ContienePalabraClave(const string& palabra) const {
+        for (const auto& p : palabrasClave) {
+            if (p == palabra) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 
+//----------------------------------------------------------------------------
+//------------------CLASE-DE-TAXONOMIA-SEGUN-SO-LOS-OBJETIVOS-APRENDIZAJE-----
+//----------------------------------------------------------------------------
+
 class Taxonomia {
 private:
-  string clasificacion;                    //clasificaciones actuales
+    int TipoTaxonomia;
+    string PalabrasClaves;  // 0 = recordar, 1 = entender, 2 = aplicar, 3 = analizar, 4 = evaluar, 5 = crear
+    string clasificacion;//clasificaciones actuales
     vector<clasificacion> clasificaciones; // lista de categorias o palabras claves
-public
+    public
     Taxonomia() : clasificacion("No encontrada") {
-    // Crear las categorías y sus palabras clave
-    clasificaciones.emplace_back("Recordar", vector<string>{"identificar","nombrar", "listar", "definir", "repetir", "enumerar", "etiquetar", "reconocer"});
-    clasificaciones.emplace_back("Entender", vector<string>{"explicar", "resumir", "describir", "interpretar", "clasificar", "comparar", "parafrasear"});
-    clasificaciones.emplace_back("Aplicar", vector<string>{"usar", "resolver", "demostrar", "implementar", "ejecutar", "calcular", "construir"});
-    clasificaciones.emplace_back("Analizar", vector<string>{"diferenciar", "organizar", "examinar", "categorizar", "contrastar", "encontrar errores"});
-    clasificaciones.emplace_back("Evaluar", vector<string>{"justificar", "juzgar", "defender", "criticar", "valorar", "argumentar", "priorizar"});
-    clasificaciones.emplace_back("Crear", vector<string>{"diseñar", "crear", "formular", "proponer", "inventar", "planificar"});
+        // Crear las categorías y sus palabras clave
+        clasificaciones.emplace_back("Recordar", vector<string>{"identificar","nombrar", "listar", "definir", "repetir", "enumerar", "etiquetar", "reconocer"});
+        clasificaciones.emplace_back("Entender", vector<string>{"explicar", "resumir", "describir", "interpretar", "clasificar", "comparar", "parafrasear"});
+        clasificaciones.emplace_back("Aplicar", vector<string>{"usar", "resolver", "demostrar", "implementar", "ejecutar", "calcular", "construir"});
+        clasificaciones.emplace_back("Analizar", vector<string>{"diferenciar", "organizar", "examinar", "categorizar", "contrastar", "encontrar errores"});
+        clasificaciones.emplace_back("Evaluar", vector<string>{"justificar", "juzgar", "defender", "criticar", "valorar", "argumentar", "priorizar"});
+        clasificaciones.emplace_back("Crear", vector<string>{"diseñar", "crear", "formular", "proponer", "inventar", "planificar"});
     }
 
     // Destructor
     virtual ~Taxonomia() {}
 
-    // Getter de la clasificación
-    string getClasificacion() const {
-    return clasificacion;
-    }
-
-     // Método para clasificar una pregunta basándonos en sus palabras clave
-    void clasificarPregunta(const string& tituloPregunta) {
-    // Convertir el título a minúsculas
-       string tituloMin = tituloPregunta;
-       transform(tituloMin.begin(), tituloMin.end(), tituloMin.begin(), ::tolower);
-
-       // Dividir el título en palabras y buscar palabras clave
-       for (const auto& categoria : clasificaciones) {
-           for (const string& palabraClave : categoria.getPalabrasClave()) {
-               if (tituloMin.find(palabraClave) != string::npos) {
-                  clasificacion = categoria.getNombre(); // Asignar la clasificación
-                  return;
+    string ClasificarPalabraClave(const string palabra) {
+        for (const auto& categoria : clasificaciones) {
+            if (categoria.contienePalabraClave(palabra)) {
+                clasificacion = categoria.getNombre();
+                return clasificacion;
             }
         }
+        clasificacion = "No encontrada";
+        return clasificacion;
     }
-
-    clasificacion = "No encontrada"; // Si no hay coincidencias
-  }
+    string getClasificacion() const {
+        return clasificacion;
+    }
+    void setTipoTaxonomia(int tipo) {
+        tipotaxonomia = tipo;
+    }
+    int getTipoTaxonomia() const {
+        return tipotaxonomia;
+    }
+    void getPalabrasClave() const {
+        return PalabrasClaves;
+    }
 };
+
+//----------------------------------------------------------------------------
+//-------------------CLASE-DE-REGISTRO-PREGUNTAS------------------------------
+//----------------------------------------------------------------------------
+
 class RegistroPreguntas {
 private:
-    vector<pair<strin, time_t>preguntasPrevias;
+    vector<pair<string, time_t>PreguntasPrevias;
 public:
-   registroPreguntas() {}
-
-   ~registroPreguntas() {}
-
-   bool verificarPreguntaRepetida(const string& pregunta) {
-     time_t HoraActual = time(nullptr);
-
-     for (const auto& registro : preguntasPrevias) {
-         if (par.first == pregunta) {
-             // Si la pregunta ya existe, verificar si han pasado 2 años
-             double AnosTranscurridos = difftime(ahora, registro.second) / (60 * 60 * 24 * 365);
-             if (anostrancurridos < 2) { // menos de 2 años
-                 return true;
-             }
-         }
-     }
-    return false; // Pregunta no repetida
-   }
-   void registrarPreguntas(const string& pregunta) {
-     preguntasPrevias.emplace_back(pregunta, time(nullptr));
-   }
-};
-
-class pregunta : public Taxonomia {
-private:
-    string Pregunta;
-    string TipoPregunta;
-    int tiempo; // tiempo predeterminado segun la taxonomia
-    int calcularTiempoSegunClasficiacion () const{
-      if (clasificacion == "recordar") return 1;
-      if (clasificacion == "entender") return 2;
-      if (clasificacion == "aplicar") return 3;
-      if (clasificacion == "analizar") return 4;
-      if (clasificacion == "evaluar") return 5;
-      if (clasificacion == "crear") return 6;
-      return 0; // Clasificación no válida
+    registroPreguntas() {}
+    ~registroPreguntas() {}
+    bool verificarPreguntaRepetida(const string& pregunta) {
+        time_t HoraActual = time(nullptr);
+        for (const auto& registro : PreguntasPrevias) {
+            if (__pstl::execution::pair.first == pregunta) {
+                // Si la pregunta ya existe, verificar si han pasado 2 años
+                double AnosTranscurridos = difftime(ahora, registro.second) / (60 * 60 * 24 * 365);
+                if (anostrancurridos < 2) { // menos de 2 años
+                    return true;
+                }
+            }
+        }
+        return false; // Pregunta no repetida
+    }
+    void registrarPreguntas(const string& pregunta) {
+        PreguntasPrevias.emplace_back(pregunta, time(nullptr));
     }
 };
 
+//----------------------------------------------------------------------------
+//-------------------CLASE-DE-PREGUNTA----------------------------------------
+//----------------------------------------------------------------------------
+
+class Pregunta : public Taxonomia {
+private:
+    string Titulo;
+    string tipoPregunta;
+    int tiempo; // Tiempo predeterminado según la taxonomía
+
+    int calcularTiempoSegunClasificacion() const {
+        if (clasificacion == "Recordar") return 1;
+        if (clasificacion == "Entender") return 2;
+        if (clasificacion == "Aplicar") return 3;
+        if (clasificacion == "Analizar") return 4;
+        if (clasificacion == "Evaluar") return 5;
+        if (clasificacion == "Crear") return 6;
+        return 0; // Clasificación no válida
+    }
 public:
-  pregunta(const string& titulo, const string& tipoPregunta)
-      :titulo(titulo), tipoPregunta(tipoPregunta) {
-    clasificarPregunta(titulo);
-    tiempo = calcularTiempoSegunClasificacion();
-  }
-
-  virtual ~pregunta() {}
-
-  string getTitulo() const {
-    return titulo;
-  }
-
+    Pregunta(const string& Titulo, const string& tipoPregunta)
+    : Titulo(Titulo), tipoPregunta(tipoPregunta) {
+        clasificarPregunta(Titulo); // Clasifica el título usando Taxonomia
+        tiempo = calcularTiempoSegunClasificacion();
+    }
+    virtual ~Pregunta() {}
+    string getTitulo() const {
+        return Titulo;
+    }
     string getTipoPregunta() const {
         return tipoPregunta;
-  }
-
-  int getTiempo() const {
-    return tiempo;
-  }
+    }
+    int getTiempo() const {
+        return tiempo;
+    }
 };
 
-class item : public pregunta {
+//----------------------------------------------------------------------------
+//-------------------CLASE-DE-Item-------------------------------------------
+//----------------------------------------------------------------------------
+
+class Item{
 private:
-     vector<pregunta> preguntas; //donde se almacenan las preguntas
+     vector<Pregunta> preguntas; //donde se almacenan las preguntas
 
 public:
-  Item(const string& titulo, const string& tipoPregunta) : pregunta(titulo, tipoPregunta){}
+  Item(const string& Titulo, const string& tipoPregunta) : pregunta(Titulo, tipoPregunta){}
 
    virtual ~Item() {}
 
     void agregarPregunta(const string& nuevaPregunta, const string& tipoPregunta , RegistroPreguntas& registro) {
-      if (registro.VerificarPreguntaRepetida(nuevaPregunta)) {
+      if (registro.verificarPreguntaRepetida(nuevaPregunta)) {
           cout << "[Error] La pregunta \"" << nuevaPregunta << "\" no puede ser utilizada durante 2 años" << endl;
           return
          }
-      registro.registrarPreguntas(nuevaPregunta);
+      registro.registrarPreguntas(nuevaPregunta);   
       preguntas.emplace_back(nuevaPregunta, tipoPregunta);
     }
     void mostrarPreguntas()const{
-      cout << "\nPreguntas del item \n";
+      cout << "\nPreguntas del Item \n";
       for ( const auto& pregunta : preguntas) {
           cout << "Pregunta: " << pregunta.getTitulo() << endl;
           cout << "Tipo de pregunta: " << pregunta.getTipoPregunta() << endl;
@@ -165,9 +179,13 @@ public:
    }
 };
 
+//----------------------------------------------------------------------------
+//-------------------CLASE-DE-PROFESOR---------------------------------------
+//----------------------------------------------------------------------------
+
 class profesor {
  private:
-   string nombre;
+    string nombre;
 
  public:
     profesor(const string& nombre) : nombre(nombre) {}
@@ -179,25 +197,32 @@ class profesor {
     }
 };
 
-class Solemne : public Item,public prfesor{
+//----------------------------------------------------------------------------
+//-------------------CLASE-DE-SOLEMNE---------------------------------------
+//----------------------------------------------------------------------------
+
+class Solemne : public Item, public profesor, public Taxonomia {
 private:
-        string fecha;
-        float ponderacion;
-        string materia;
+    string fecha;
+    float ponderacion;
+    string materia;
 public:
-  solemne(const string& titulo, const string& fecha, float ponderacion, const string& nombreProfesor, string & materia)
-      : Item(titulo, "Solemne"), profesor(nombreProfesor), fecha(fecha), ponderacion(ponderacion), materia(materia) {}
-    }
-};
-    virtual ~Solemne() {}
+    Solemne(const string& Titulo, const string& fecha, const float ponderacion, const string& nombreProfesor, const string& materia)
+        : Item(Titulo, "Solemne"), profesor(nombreProfesor), Taxonomia(),
+          fecha(fecha), ponderacion(ponderacion), materia(materia) {}
+
+    ~Solemne() {}
 
     void mostrarInformacion() const {
         cout << "Título: " << getTitulo() << endl;
-        cout << "Fecha de creación: " << fecha << endl;
+        cout << "Fecha: " << fecha << endl;
         cout << "Ponderación: " << ponderacion << "%" << endl;
         cout << "Materia: " << materia << endl;
         cout << "Profesor(a): " << getNombre() << endl;
+        mostrarPreguntas();
     }
+};
+
 
 class Menu{
 private:
@@ -230,12 +255,12 @@ private:
   }
 public:
   void crearPrueba(){
-    string titulo , fecha , nombreProfesor, materia;
+    string Titulo , fecha , nombreProfesor, materia;
     float ponderacion;
 
     cout << "Ingrese el título de la prueba: ";
     cin.ignore();
-    getline(cin, titulo);
+    getline(cin, Titulo);
 
     cout << "Ingrese la fecha de creación (DD/MM/AAAA): ";
     getline(cin, fecha);
@@ -248,34 +273,34 @@ public:
     cout << "Ingrese el nombre del profesor(a): ";
     cin >> ponderacion;
 
-    solemne nuevaPrueba(titulo, fecha, ponderacion, nombreProfesor, materia);
+    solemne nuevaPrueba(Titulo, fecha, ponderacion, nombreProfesor, materia);
 
     int cantidadItems;
-    cout << "Ingrese la cantidad de items: ";
+    cout << "Ingrese la cantidad de Items: ";
     cin >> cantidadItems;
 
     for (int i = 0; i < cantidadItems; ++i) {
-        string tituloItem;
-        cout << "Ingrese el título del item " << i + 1 << ": ";
+        string TituloItem;
+        cout << "Ingrese el título del Item " << i + 1 << ": ";
         cin.ignore();
-        getline(cin, tituloItem);
+        getline(cin, TituloItem);
 
-        Item nuevoItem(tituloItem, "Solemne");
+        Item nuevoItem(TituloItem, "Solemne");
 
         int cantidadPreguntas;
-        cout << "Ingrese la cantidad de preguntas para el item " << i + 1 << ": ";
+        cout << "Ingrese la cantidad de preguntas para el Item " << i + 1 << ": ";
         cin >> cantidadPreguntas;
 
         for (int j = 0; j < cantidadPreguntas; ++j) {
            cin.ignore();
-           string tituloPregunta , tipoPregunta;
+           string TituloPregunta , tipoPregunta;
            cout<<"Ingrese el título de la pregunta " << j + 1 << ": ";
-           getline(cin, tituloPregunta);
+           getline(cin, TituloPregunta);
            cout << "Ingrese el tipo de pregunta (Verdadero/Falso, Opcion Multiple, etc.): ";
            getline(cin, tipoPregunta);
 
-           pregunta nuevaPregunta(tituloPregunta, tipoPregunta);
-           nuevoItem.agregarPregunta(tituloPregunta, tipoPregunta);
+           pregunta nuevaPregunta(TituloPregunta, tipoPregunta);
+           nuevoItem.agregarPregunta(TituloPregunta, tipoPregunta);
         }
 
        nuevaPreuba.agregarPregunta(nuevoItem.getTitulo(), "Solemne");
