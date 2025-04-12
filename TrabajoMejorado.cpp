@@ -1,225 +1,299 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm> // para ocupar std::transform
 
 using namespace std;
-//----------------------------------------------------------------------------------------------------------------------
+
+class Clasificacion {
+private:
+    string nombre;
+    vector<string> palabrasClave;
+
+public:
+    Clasificacion(const string& nombre, const vector<string>& palabrasClave)
+        : nombre(nombre), palabrasClave(palabrasClave) {}
+
+    ~Clasificacion() {}
+
+    string getNombre() const {
+        return nombre;
+    }
+
+    const vector<string>& getPalabrasClave() const {
+        return palabrasClave;
+    }
+
+    bool contienePalabraClave(const string& palabra) const {
+        return find(palabrasClave.begin(), palabrasClave.end(), palabra) != palabrasClave.end();
+    }   
+};
+
+
 class Taxonomia {
 private:
-    int tipotaxonomia;                          // variable donde se almacenara el tipo taxonomia  ya que 1) crear 2) evaluar ....... etc
-    string palabrasclaves;                     // Alacenar las variables para la funcion de guardar palabras claves
-public:
-    Taxonomia( int tipotaxonomia, const string& palabrasclaves );
-    ~Taxonomia();                                //Destruct Para liberar memoria
-    int getTipotaxonomia();
-    void setTipotaxonomia(int tipotaxonomia);
-    string getPalabrasclaves();
-    void setPalabrasclaves( string palabrasclaves );
-};
-Taxonomia::Taxonomia(int tipotaxonomia, const string& palabrasclaves) {
-    this->tipotaxonomia = tipotaxonomia;
-    this->palabrasclaves = palabrasclaves;
-}
-int Taxonomia::getTipotaxonomia() {
-    return this->tipotaxonomia;
-}
-void Taxonomia::setTipotaxonomia(int tipotaxonomia) {
-    this->tipotaxonomia = tipotaxonomia;
-};
+  string clasificacion;                    //clasificaciones actuales
+    vector<clasificacion> clasificaciones; // lista de categorias o palabras claves
+public
+    Taxonomia() : clasificacion("No encontrada") {
+    // Crear las categorías y sus palabras clave
+    clasificaciones.emplace_back("Recordar", vector<string>{"identificar","nombrar", "listar", "definir", "repetir", "enumerar", "etiquetar", "reconocer"});
+    clasificaciones.emplace_back("Entender", vector<string>{"explicar", "resumir", "describir", "interpretar", "clasificar", "comparar", "parafrasear"});
+    clasificaciones.emplace_back("Aplicar", vector<string>{"usar", "resolver", "demostrar", "implementar", "ejecutar", "calcular", "construir"});
+    clasificaciones.emplace_back("Analizar", vector<string>{"diferenciar", "organizar", "examinar", "categorizar", "contrastar", "encontrar errores"});
+    clasificaciones.emplace_back("Evaluar", vector<string>{"justificar", "juzgar", "defender", "criticar", "valorar", "argumentar", "priorizar"});
+    clasificaciones.emplace_back("Crear", vector<string>{"diseñar", "crear", "formular", "proponer", "inventar", "planificar"});
+    }
 
+    // Destructor
+    virtual ~Taxonomia() {}
 
-// Metodos de taxonomia -----------------------------------------------------------------------------------------------
-// Estructura Base de la Clase pregunta--------------------------------------------------------------------------------
-class Pregunta:public Taxonomia{   // llamando a la herencia de Taxonomia
+    // Getter de la clasificación
+    string getClasificacion() const {
+    return clasificacion;
+    }
+
+     // Método para clasificar una pregunta basándonos en sus palabras clave
+    void clasificarPregunta(const string& tituloPregunta) {
+    // Convertir el título a minúsculas
+       string tituloMin = tituloPregunta;
+       transform(tituloMin.begin(), tituloMin.end(), tituloMin.begin(), ::tolower);
+
+       // Dividir el título en palabras y buscar palabras clave
+       for (const auto& categoria : clasificaciones) {
+           for (const string& palabraClave : categoria.getPalabrasClave()) {
+               if (tituloMin.find(palabraClave) != string::npos) {
+                  clasificacion = categoria.getNombre(); // Asignar la clasificación
+                  return;
+            }
+        }
+    }
+
+    clasificacion = "No encontrada"; // Si no hay coincidencias
+  }
+};
+class RegistroPreguntas {
 private:
-    string verdaderofalso;
-    string opcionmultiple;
-    int respuestas;
+    vector<pair<strin, time_t>preguntasPrevias;
 public:
-    Pregunta(int tipotaxonomia, const string& palabrasclaves, string verdaderofalso, string opcionmultiple, int respuestas);
-    ~Pregunta();
-    string getVerdaderofalso();
-    void setVerdaderofalso(string verdaderofalso);
-    string getOpcionmultiple();
-    void setOpcionmultiple(string opcionmultiple);
-    int getRespuestas();
-    void setRespuestas(int respuestas);
+   registroPreguntas() {}
+
+   ~registroPreguntas() {}
+
+   bool verificarPreguntaRepetida(const string& pregunta) {
+     time_t HoraActual = time(nullptr);
+
+     for (const auto& registro : preguntasPrevias) {
+         if (par.first == pregunta) {
+             // Si la pregunta ya existe, verificar si han pasado 2 años
+             double AnosTranscurridos = difftime(ahora, registro.second) / (60 * 60 * 24 * 365);
+             if (anostrancurridos < 2) { // menos de 2 años
+                 return true;
+             }
+         }
+     }
+    return false; // Pregunta no repetida
+   }
+   void registrarPreguntas(const string& pregunta) {
+     preguntasPrevias.emplace_back(pregunta, time(nullptr));
+   }
 };
-// Metodos preguntas --------------------------------------------------------------------------------------------------
+
+class pregunta : public Taxonomia {
+private:
+    string Pregunta;
+    string TipoPregunta;
+    int tiempo; // tiempo predeterminado segun la taxonomia
+    int calcularTiempoSegunClasficiacion () const{
+      if (clasificacion == "recordar") return 1;
+      if (clasificacion == "entender") return 2;
+      if (clasificacion == "aplicar") return 3;
+      if (clasificacion == "analizar") return 4;
+      if (clasificacion == "evaluar") return 5;
+      if (clasificacion == "crear") return 6;
+      return 0; // Clasificación no válida
+    }
+};
+
+public:
+  pregunta(const string& titulo, const string& tipoPregunta)
+      :titulo(titulo), tipoPregunta(tipoPregunta) {
+    clasificarPregunta(titulo);
+    tiempo = calcularTiempoSegunClasificacion();
+  }
+
+  virtual ~pregunta() {}
+
+  string getTitulo() const {
+    return titulo;
+  }
+
+    string getTipoPregunta() const {
+        return tipoPregunta;
+  }
+
+  int getTiempo() const {
+    return tiempo;
+  }
+};
+
+class item : public pregunta {
+private:
+     vector<pregunta> preguntas; //donde se almacenan las preguntas
+
+public:
+  Item(const string& titulo, const string& tipoPregunta) : pregunta(titulo, tipoPregunta){}
+
+   virtual ~Item() {}
+
+    void agregarPregunta(const string& nuevaPregunta, const string& tipoPregunta , RegistroPreguntas& registro) {
+      if (registro.VerificarPreguntaRepetida(nuevaPregunta)) {
+          cout << "[Error] La pregunta \"" << nuevaPregunta << "\" no puede ser utilizada durante 2 años" << endl;
+          return
+         }
+      registro.registrarPreguntas(nuevaPregunta);
+      preguntas.emplace_back(nuevaPregunta, tipoPregunta);
+    }
+    void mostrarPreguntas()const{
+      cout << "\nPreguntas del item \n";
+      for ( const auto& pregunta : preguntas) {
+          cout << "Pregunta: " << pregunta.getTitulo() << endl;
+          cout << "Tipo de pregunta: " << pregunta.getTipoPregunta() << endl;
+          cout << "Clasificacion: " << pregunta.getClasificacion() << endl;
+          cout << "Tiempo estimado: " << pregunta.getTiempo() << " minutos" << endl;
+      }
+   }
+};
 
 class profesor {
-    private:
-        string nombre;
-        string asignatura;
-    public:
-        profesor(string nombre, string asignatura);
-        ~profesor();
-        string getNombre();
-        void setNombre(string nombre);
-        string getAsignatura();
-        void setAsignatura(string asignatura);
+ private:
+   string nombre;
+
+ public:
+    profesor(const string& nombre) : nombre(nombre) {}
+
+    ~profesor() {}
+
+    string getNombre() const {
+         return nombre;
+    }
 };
 
-// metodos profesor ---------------------------------------------------------------------------------------------------
-
-class Items : public Pregunta, public Taxonomia {
-
-      string SeleccionItems;
-    public:
-      Items(int tipotaxonomia, const string& palabrasclaves, string verdaderofalso, string opcionmultiple, int respuestas, string seleccionitems);
-      ~Items();
-      string getSeleccionItems();
-      void setSeleccionItems(string seleccionitems);
-};
-//metodos items -------------------------------------------------------------------------------------------------------
-
-class Examen:public Taxonomia,public Pregunta,public profesor {
+class Solemne : public Item,public prfesor{
 private:
+        string fecha;
+        float ponderacion;
+        string materia;
+public:
+  solemne(const string& titulo, const string& fecha, float ponderacion, const string& nombreProfesor, string & materia)
+      : Item(titulo, "Solemne"), profesor(nombreProfesor), fecha(fecha), ponderacion(ponderacion), materia(materia) {}
+    }
+};
+    virtual ~Solemne() {}
+
+    void mostrarInformacion() const {
+        cout << "Título: " << getTitulo() << endl;
+        cout << "Fecha de creación: " << fecha << endl;
+        cout << "Ponderación: " << ponderacion << "%" << endl;
+        cout << "Materia: " << materia << endl;
+        cout << "Profesor(a): " << getNombre() << endl;
+    }
+
+class Menu{
+private:
+  vector<Solemne> pruebas;
+
+  string SelecionarMateria (){
+      vector<string> materias = {"Matematica", "Lenguaje", "Historia", "Ciencias Social", "Ingles","Biologia","Quimica","Fisica"};
+      int opcion;
+
+      cout << "\nSeleccione la materia:\n";
+      for (size_t i = 0; i < materias.size(); ++i) {
+          cout << i + 1 << ". " << materias[i] << "\n";
+      }
+      cout << materias.size() + 1 << ". Otros\n";
+      cout << "Opción: ";
+      cin >> opcion;
+
+      if (opcion > 0 && opcion <= materias.size()) {
+          return materias[opcion - 1];
+      } else if (opcion == materias.size() + 1) {
+          cin.ignore();
+          string otraMateria;
+          cout << "Ingrese el nombre de la materia: ";
+          getline(cin, otraMateria);
+          return otraMateria;
+      } else {
+          cout << "Opción inválida. Seleccionando Lenguaje por defecto.\n";
+          return "Lenguaje";
+      }
+  }
+public:
+  void crearPrueba(){
+    string titulo , fecha , nombreProfesor, materia;
     float ponderacion;
-    struct timezone;
-    string titulo;                    //titulo de que es el examen
-public:
-    Examen(int tipotaxonomia, const string& palabrasclaves, string verdaderofalso, string opcionmultiple, int respuestas, string nombre, string asignatura, float ponderacion, string titulo);
-    ~Examen();
-    float getPonderacion();
-    void setPonderacion(float ponderacion);
-    string getTitulo();
-    void setTitulo(string titulo);
-};
 
-
-//la clase menu debe heredar lo que contenga la clase examen, para ser usado en la opcion de crear, borrar, actualizar, buscar información del item
-// ¡¡ACTUALIZACION DE IMPLEMENTACION: EL SISTEMA DEBE INCORPORAR UNA CLASE ITEM QUE GUARDARA TODO LO RELACIONADO A LAS PREGUNTAS, ESTA LUEGO SERA LLAMADA A PRUEBA
-// ESTO PARA CUMPLIR CON LA CONDICION DE BUSCAR INFORMACION POR ITEM EN LA EVALUACION!!
-
-class Menu : public Examen {
-public:
-
-    void mostrarMenu();
-    void crear_prueba();
-    void actualizarItem();
-    void consultarInformacion();
-    void borrarItem();
-};
-
-void Menu::crear_prueba() {
-    int cantidadItems;
-    string nombre, asignatura, titulo;
-
-    cout << "Ingrese título de la prueba: ";
-    getline(cin, titulo);
-    cout << "Ingrese nombre del profesor: ";
-    getline(cin, nombre);
-    cout << "Ingrese asignatura: ";
-    getline(cin, asignatura);
-
-    cout << "¿Cuántos items desea agregar al examen? ";
-    cin >> cantidadItems;
+    cout << "Ingrese el título de la prueba: ";
     cin.ignore();
-                                                                        //solicitud de usuario para añadir una cantidad X de items a
-    for (int i = 0; i < cantidadItems; i++) {
-        int tipopregunta;
-        cout << "\nItem [" << (i + 1) << "]" << endl;
-        cout << "Seleccione el tipo de pregunta: \n";
-        cout << "[1] Verdadero/Falso\n[2] Opción Múltiple\nOpción: ";
-        cin >> tipopregunta;
+    getline(cin, titulo);
+
+    cout << "Ingrese la fecha de creación (DD/MM/AAAA): ";
+    getline(cin, fecha);
+
+    cout << "Ingrese la ponderación de la prueba: ";
+    cin >> ponderacion;
+
+    materia = SelecionarMateria();
+
+    cout << "Ingrese el nombre del profesor(a): ";
+    cin >> ponderacion;
+
+    solemne nuevaPrueba(titulo, fecha, ponderacion, nombreProfesor, materia);
+
+    int cantidadItems;
+    cout << "Ingrese la cantidad de items: ";
+    cin >> cantidadItems;
+
+    for (int i = 0; i < cantidadItems; ++i) {
+        string tituloItem;
+        cout << "Ingrese el título del item " << i + 1 << ": ";
         cin.ignore();
+        getline(cin, tituloItem);
 
-        int cantidadPreguntasItem;
-        cout << "¿Cuántas preguntas desea añadir a este item?: ";
-        cin >> cantidadPreguntasItem;
-        cin.ignore();
+        Item nuevoItem(tituloItem, "Solemne");
 
-        for (int j = 0; j < cantidadPreguntasItem; j++) {
-            string pregunta;
-            cout << "\nPregunta [" << (j + 1) << "]" << endl;
-            cout << "Ingrese la pregunta: ";
-            getline(cin, pregunta);
+        int cantidadPreguntas;
+        cout << "Ingrese la cantidad de preguntas para el item " << i + 1 << ": ";
+        cin >> cantidadPreguntas;
 
-            // Convertir todo a minúscula
-            for (char& c : pregunta) {
-                c = tolower(c);
-            }
+        for (int j = 0; j < cantidadPreguntas; ++j) {
+           cin.ignore();
+           string tituloPregunta , tipoPregunta;
+           cout<<"Ingrese el título de la pregunta " << j + 1 << ": ";
+           getline(cin, tituloPregunta);
+           cout << "Ingrese el tipo de pregunta (Verdadero/Falso, Opcion Multiple, etc.): ";
+           getline(cin, tipoPregunta);
 
+           pregunta nuevaPregunta(tituloPregunta, tipoPregunta);
+           nuevoItem.agregarPregunta(tituloPregunta, tipoPregunta);
         }
 
-            if (tipopregunta == 1) {
-                string respuestaVerdadera, respuestaFalsa;
-                cout << "Ingrese la respuesta verdadera: ";
-                getline(cin, respuestaVerdadera);
-                cout << "Ingrese la respuesta falsa: ";
-                getline(cin, respuestaFalsa);
-
-                // Aquí podrías guardar la pregunta con sus respuestas en una lista/vectores/objetos
-                // Ejemplo: crearObjetoVerdaderoFalso(pregunta, respuestaVerdadera, respuestaFalsa);
-            }
-            else if (tipopregunta == 2) {
-                int cantidadOpciones;
-                cout << "¿Cuántas opciones desea ingresar para esta pregunta?: ";
-                cin >> cantidadOpciones;
-                cin.ignore();
-
-                for (int k = 0; k < cantidadOpciones; k++) {
-                    string opcion;
-                    cout << "Ingrese la opción [" << (k + 1) << "]: ";
-                    getline(cin, opcion);
-                    // Guardar cada opción en un vector/lista asociada a la pregunta
-                }
-
-                int respuestaCorrecta;
-                cout << "¿Cuál opción es la correcta? (número de opción): ";
-                cin >> respuestaCorrecta;
-                cin.ignore();
-
-                // Aquí podrías guardar la pregunta y cuál opción es la correcta
-                // Ejemplo: crearObjetoOpcionMultiple(pregunta, opciones, respuestaCorrecta);
-            }
-            else {
-                cout << "Tipo de pregunta inválido.\n";
-                break;
-            }
-        }
+       nuevaPreuba.agregarPregunta(nuevoItem.getTitulo(), "Solemne");
     }
+
+    prueba.push_back(nuevaPrueba);
+    cout << "Prueba creada exitosamente.\n";
+  }
+
+  void mostrarPruebas() const {
+    for (const auto& prueba : pruebas) {
+        prueba.mostrarInformacion();
+    }
+  }
 };
 
-
-void Menu::mostrarMenu() {
-    int opcion;
-    bool bucle = true;
-
-    while (bucle) {
-        cout << "Bienvenido al sistema de evaluacion 1.0\n"
-             << "Por favor, seleccione una de las siguientes opciones:\n"
-             << "[1] Crear prueba\n"
-             << "[2] Actualizar Item de la prueba\n"
-             << "[3] Consultar informacion de la prueba\n"
-             << "[4] Borrar Item de la prueba\n"
-             << "[5] Salir\n"
-             << endl;
-
-        cin >> opcion;
-
-        switch (opcion) {
-            case 1:
-                crear_prueba();
-            break;
-            case 2:
-                actualizarItem();
-            break;
-            case 3:
-                consultarInformacion();
-            break;
-            case 4:
-                borrarItem();
-            break;
-            case 5:
-                cout << "Saliendo del sistema. ¡Hasta luego!" << endl;
-            bucle = false;
-            break;
-            default:
-                cout << "Opcion no valida. Intente de nuevo.\n" << endl;
-            break;
-        }
-    }
-}
-
+int main(){
+  Menu menu;
+  menu.crearPrueba();
+  retunr 0;
+};
