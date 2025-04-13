@@ -4,6 +4,10 @@
 #include <cctype>
 using namespace std;
 
+//----------------------------------------------------------------------------------------------
+//clase para ayudar en la clasificacion taxonomica de las preguntas en base a las palabras clave
+//----------------------------------------------------------------------------------------------
+
 class Clasificacion {
 private:
     string nombre;
@@ -21,6 +25,10 @@ public:
         return palabrasClave;
     }
 };
+
+//-------------------------------------------------------------------------
+//clase para asignar el nivel de taxonomia a las preguntas
+//-------------------------------------------------------------------------
 
 class Taxonomia {
 private:
@@ -61,9 +69,14 @@ public:
     }
 };
 
-class profesor {
+//---------------------------------------------------------------------------------
+//clase para almacenar nombre del profesor junto al ramo que imparte
+//---------------------------------------------------------------------------------
+
+class profesor {                                                            //[IDEA]--> AÑADIR VARIABLE QUE ALMACENE LA CLASE QUE IMPARTE
 private:
     string nombre;
+    string ramo;
 
 public:
     profesor(const string& nombre) : nombre(nombre) {}
@@ -72,7 +85,14 @@ public:
     string getNombre() {
         return nombre;
     }
+    string getRamo() {
+      return ramo;
+    }
 };
+
+//---------------------------------------------------------------------------------
+//Clase para crear una prueba
+//---------------------------------------------------------------------------------
 
 class Solemne : public profesor, public Taxonomia {
 private:
@@ -212,41 +232,19 @@ public:
     }
 };
 
-int main() {
-    string tituloPrueba = "Evaluación Inicial";
-    string fecha = "15/03/2024";
-    float ponderacion = 50.0;
-    string nombreProfesor = "Profesor Juan Pérez";
+class Menu : public Solemne{
+  cout<<"--------------------------------------"<<endl;
+  cout<<"---Bienvenido al sistema de pruebas---"<<endl;
+  cout<<"--------------------------------------"<<endl;
 
-    Solemne solemne(tituloPrueba, fecha, ponderacion, nombreProfesor);
-    int opcion = -1;
+  cout<<"Ingrese alguna de las siguientes opciones:"<<endl;
+  cout<<"[1] Crear prueba"<<endl;
+  cout<<"[2] actualizar prueba"<<endl;
+  cout<<"[3] eliminar prueba"<<endl;
+  cout<<"[4] buscar por fecha"<<endl;
 
-    do {
-        cout << "\n********** MENÚ **********" << endl;
-        cout << "1. Crear una nueva prueba" << endl;
-        cout << "2. Mostrar informacion de la prueba" << endl;
-        cout << "3. Salir" << endl;
-        cout << "Seleccione una opción: ";
-        while (!(cin >> opcion) || opcion < 1 || opcion > 3) {
-            cout << "Opción invalida. Intente nuevamente: ";
-            cin.clear();
-            cin.ignore();
-        }
 
-        switch (opcion) {
-            case 1:
-                solemne.crearPrueba();
-                break;
-            case 2:
-                solemne.mostrarInformacion();
-                break;
-            case 3:
-                cout << "Saliendo del programa. ¡Adiós!" << endl;
-                break;
-            default:
-                cout << "Opción no válida. Intente nuevamente." << endl;
-        }
-    } while (opcion != 3);
-printf("hola")
-    return 0;
-}
+
+};
+
+int main() {}
