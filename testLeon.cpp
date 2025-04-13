@@ -4,7 +4,6 @@
 #include <cctype>
 using namespace std;
 
-// Clase para manejar la categoría y sus palabras clave
 class Clasificacion {
 private:
     string nombre;
@@ -25,12 +24,11 @@ public:
 
 class Taxonomia {
 private:
-    vector<Clasificacion> clasificaciones; // Lista de categorías o palabras clave
-    string clasificacionActual; // Clasificación actual encontrada
+    vector<Clasificacion> clasificaciones;
+    string clasificacionActual;
 
 public:
     Taxonomia() : clasificacionActual("No encontrada") {
-        // Crear las categorías y sus palabras clave
         clasificaciones.emplace_back("Recordar", vector<string>{"identificar", "nombrar", "listar", "definir", "repetir", "enumerar", "etiquetar", "reconocer"});
         clasificaciones.emplace_back("Entender", vector<string>{"explicar", "resumir", "describir", "interpretar", "clasificar", "comparar", "parafrasear"});
         clasificaciones.emplace_back("Aplicar", vector<string>{"usar", "resolver", "demostrar", "implementar", "ejecutar", "calcular", "construir"});
@@ -39,14 +37,11 @@ public:
         clasificaciones.emplace_back("Crear", vector<string>{"diseñar", "crear", "formular", "proponer", "inventar", "planificar"});
     }
 
-    // Destructor virtual para evitar problemas de herencia
     virtual ~Taxonomia() {}
 
     string ClasificarPregunta(const string& pregunta) {
-        // Convertir el título de la pregunta a minúsculas sin usar transform
         string preguntaMin = toLowerCase(pregunta);
 
-        // Buscar coincidencias y devolver la taxonomía clasificada
         for (const auto& clasificacion : clasificaciones) {
             for (const auto& palabraClave : clasificacion.getPalabrasClave()) {
                 if (preguntaMin.find(palabraClave) != string::npos) {
@@ -57,20 +52,19 @@ public:
         return "No encontrada";
     }
 
-    // Método auxiliar para convertir una cadena a minúsculas sin usar transform
     string toLowerCase(const string& texto) {
-        string resultado = texto; // Copiamos el texto original
+        string resultado = texto;
         for (size_t i = 0; i < resultado.size(); ++i) {
-            resultado[i] = tolower(resultado[i]); // Convertimos cada carácter a minúscula
+            resultado[i] = tolower(resultado[i]);
         }
         return resultado;
     }
 };
 
-
 class profesor {
 private:
     string nombre;
+
 public:
     profesor(const string& nombre) : nombre(nombre) {}
     ~profesor() {}
@@ -80,11 +74,11 @@ public:
     }
 };
 
-class Solemne : public profesor, Taxonomia {
+class Solemne : public profesor, public Taxonomia {
 private:
     string titulo_prueba;
-    string titulo_item;
     string tipo_pregunta;
+    string titulo_pregunta;
     string fecha_creacion;
     string materia;
     string fecha;
@@ -94,67 +88,68 @@ private:
 
 public:
     Solemne(const string& titulo_prueba, const string& fecha, float ponderacion, const string& nombreProfesor)
-        : profesor(nombreProfesor), titulo_prueba(titulo_prueba), fecha(fecha), ponderacion(ponderacion) {}
+        : profesor(nombreProfesor), titulo_prueba(titulo_prueba), fecha(fecha), ponderacion(ponderacion),
+          cantidad_preguntas(0), cantidad_items(0) {}
 
-    ~Solemne() {}
-
-    bool esFechaValida(const string& fecha) {
-        if (fecha.length() != 10) return false;
-        if (fecha[2] != '/' || fecha[5] != '/') return false;
-        try {
-            int dia = stoi(fecha.substr(0, 2));
-            int mes = stoi(fecha.substr(3, 2));
-            int anio = stoi(fecha.substr(6, 4));
-            return dia > 0 && dia <= 31 && mes > 0 && mes <= 12 && anio > 0;
-        } catch (...) {
-            return false;
-        }
+    void asignarNivelTaxonomia() {
+        string nivelTaxonomia = ClasificarPregunta(titulo_pregunta);
+        cout << "El nivel de taxonomía asignado al ítem \"" << titulo_pregunta << "\" es: " << nivelTaxonomia << endl;
     }
 
     void crearPrueba() {
+        cin.ignore(); // Limpiar posibles restos en el buffer
         cout << "Ingrese el título de la prueba: ";
-        cin.ignore();
         getline(cin, titulo_prueba);
+
         cout << "Ingrese la fecha de creación (DD/MM/AAAA): ";
         getline(cin, fecha_creacion);
-        if (!esFechaValida(fecha_creacion)) {
-            cout << "Fecha inválida. Debe tener el formato DD/MM/AAAA." << endl;
-            return;
-        }
+
         cout << "Ingrese la materia: ";
         getline(cin, materia);
 
         cout << "Ingrese la cantidad de ítems: ";
-        cin >> cantidad_items;
-        for (int i = 0; i < cantidad_items; i++) {
-            cout << "Ingrese el título del ítem: ";
-                cin.ignore();
-            getline(cin, titulo_item);
-            if (titulo_item.length() > 50 || titulo_item.length() < 5 || titulo_item.empty()) {
-                cout << "titulo invalido" << endl;
-                return;
-            }
-            cout << "Ingrese el tipo de pregunta (1. Verdadero/Falso, 2. Opción Múltiple): ";
-            int tipo;
-            cin >> tipo;
-            cout << "Ingrese la cantidad de preguntas: ";
-            cin >> cantidad_preguntas;
+        while (!(cin >> cantidad_items) || cantidad_items <= 0) {
+            cout << "Cantidad inválida. Intente nuevamente: ";
+            cin.clear();
+            cin.ignore();
+        }
 
+        for (int i = 0; i < cantidad_items; i++) {
+            cout << "Ingrese el tipo de pregunta ([1] Verdadero/Falso, [2] Opción Múltiple): ";
+            int tipo;
+            while (!(cin >> tipo) || (tipo != 1 && tipo != 2)) {
+                cout << "Entrada inválida. Intente nuevamente ([1] o [2]): ";
+                cin.clear();
+                cin.ignore();
+            }
+
+            cout << "Ingrese la cantidad de preguntas: ";
+            while (!(cin >> cantidad_preguntas) || cantidad_preguntas <= 0) {
+                cout << "Cantidad inválida. Intente nuevamente: ";
+                cin.clear();
+                cin.ignore();
+            }
+
+            cin.ignore(); // Limpiar buffer
             for (int j = 0; j < cantidad_preguntas; j++) {
                 cout << "Ingrese el título de la pregunta: ";
-                cin.ignore();
-                string pregunta;
-                getline(cin, pregunta);
+                getline(cin, titulo_pregunta);
+
+                asignarNivelTaxonomia();
 
                 if (tipo == 1) {
                     cout << "Ingrese la cantidad de respuestas: ";
                     int cantidad_respuestas;
-                    cin >> cantidad_respuestas;
-                    vector<string> respuestas;
+                    while (!(cin >> cantidad_respuestas) || cantidad_respuestas <= 0) {
+                        cout << "Cantidad inválida. Intente nuevamente: ";
+                        cin.clear();
+                        cin.ignore();
+                    }
 
+                    vector<string> respuestas;
+                    cin.ignore(); // Limpiar buffer
                     for (int k = 0; k < cantidad_respuestas; k++) {
                         cout << "Ingrese la respuesta: ";
-                        cin.ignore();
                         string respuesta;
                         getline(cin, respuesta);
                         respuestas.push_back(respuesta);
@@ -162,26 +157,96 @@ public:
 
                     cout << "Seleccione la respuesta correcta (ingrese el número):" << endl;
                     for (int k = 0; k < respuestas.size(); k++) {
-                        cout << k + 1 << ". " << respuestas[k] << endl; // Mostrar las opciones
+                        cout << k + 1 << ". " << respuestas[k] << endl;
                     }
-                    int indice_correcto;
-                    cin >> indice_correcto;
 
-                    while(indice_correcto < 1 || indice_correcto > respuestas.size()) {
+                    int indice_correcto;
+                    while (!(cin >> indice_correcto) || indice_correcto < 1 || indice_correcto > respuestas.size()) {
                         cout << "Índice incorrecto. Seleccione nuevamente: ";
-                        cin >> indice_correcto;
+                        cin.clear();
+                        cin.ignore();
                     }
-                    string respuesta_correcta = respuestas[indice_correcto - 1];
-                    cout << "Respuesta correcta: " << respuesta_correcta << endl;
+
+                    cout << "Respuesta correcta: " << respuestas[indice_correcto - 1] << endl;
+                } else if (tipo == 2) {
+                    cout << "Ingrese la cantidad de opciones: ";
+                    int cantidad_opciones;
+                    while (!(cin >> cantidad_opciones) || cantidad_opciones <= 0) {
+                        cout << "Cantidad inválida. Intente nuevamente: ";
+                        cin.clear();
+                        cin.ignore();
+                    }
+
+                    vector<string> opciones;
+                    cin.ignore();
+                    for (int k = 0; k < cantidad_opciones; k++) {
+                        cout << "Ingrese la opción: ";
+                        string opcion;
+                        getline(cin, opcion);
+                        opciones.push_back(opcion);
+                    }
+
+                    cout << "Seleccione la opción correcta (ingrese el número):" << endl;
+                    for (int k = 0; k < opciones.size(); k++) {
+                        cout << k + 1 << ". " << opciones[k] << endl;
+                    }
+
+                    int indice_correcto;
+                    while (!(cin >> indice_correcto) || indice_correcto < 1 || indice_correcto > opciones.size()) {
+                        cout << "Índice incorrecto. Seleccione nuevamente: ";
+                        cin.clear();
+                        cin.ignore();
+                    }
+
+                    cout << "Respuesta correcta: " << opciones[indice_correcto - 1] << endl;
+                }
             }
         }
-        cout << "Ingrese la ponderación de la prueba: ";
-        cin >> ponderacion;
+    }
 
-    void mostrarInformacion(){
+    void mostrarInformacion() {
         cout << "Título: " << titulo_prueba << endl;
         cout << "Fecha: " << fecha << endl;
         cout << "Ponderación: " << ponderacion << "%" << endl;
         cout << "Profesor(a): " << getNombre() << endl;
-        }
+    }
 };
+
+int main() {
+    string tituloPrueba = "Evaluación Inicial";
+    string fecha = "15/03/2024";
+    float ponderacion = 50.0;
+    string nombreProfesor = "Profesor Juan Pérez";
+
+    Solemne solemne(tituloPrueba, fecha, ponderacion, nombreProfesor);
+    int opcion = -1;
+
+    do {
+        cout << "\n********** MENÚ **********" << endl;
+        cout << "1. Crear una nueva prueba" << endl;
+        cout << "2. Mostrar informacion de la prueba" << endl;
+        cout << "3. Salir" << endl;
+        cout << "Seleccione una opción: ";
+        while (!(cin >> opcion) || opcion < 1 || opcion > 3) {
+            cout << "Opción invalida. Intente nuevamente: ";
+            cin.clear();
+            cin.ignore();
+        }
+
+        switch (opcion) {
+            case 1:
+                solemne.crearPrueba();
+                break;
+            case 2:
+                solemne.mostrarInformacion();
+                break;
+            case 3:
+                cout << "Saliendo del programa. ¡Adiós!" << endl;
+                break;
+            default:
+                cout << "Opción no válida. Intente nuevamente." << endl;
+        }
+    } while (opcion != 3);
+printf("hola")
+    return 0;
+}
